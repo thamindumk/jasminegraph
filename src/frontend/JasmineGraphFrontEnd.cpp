@@ -454,6 +454,26 @@ static void cypher_ast_command(int connFd, bool *loop_exit) {
     } else {
         frontend_logger.error("query isn't semantically correct: "+user_res_s);
     }
+    SharedBuffer sharedBuffer(3);
+    JasmineGraphServer *server = JasmineGraphServer::getInstance();
+    server->sendQueryPlan(stoi(user_res_1), workerClients.size(), obj, std::ref(sharedBuffer));
+
+    int closeFlag = 0;
+
+    while(true){
+        if(closeFlag == numberOfPartitions) {
+            break;
+        }
+        std::string data = sharedBuffer.get();
+        if (data == "-1")
+        {
+            closeFlag++;
+        }else
+        {
+            result_wr = write(connFd, data.c_str(), data.length());
+            result_wr = write(connFd, "\r\n", 2);
+        }
+    }
 }
 
 static void add_rdf_command(std::string masterIP, int connFd, SQLiteDBInterface *sqlite, bool *loop_exit_p) {
