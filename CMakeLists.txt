@@ -82,10 +82,12 @@ set(HEADERS globals.h
         src/query/processor/cypher/util/Const.h
         src/query/processor/cypher/queryplanner/Operators.h
         src/query/processor/cypher/queryplanner/QueryPlanner.h
-        src/query/processor/cypher/runtime/QueryPlanHandler.h
         src/query/processor/cypher/runtime/InstanceHandler.h
         src/query/processor/cypher/runtime/OperatorExecutor.h
         src/query/processor/cypher/util/SharedBuffer.h
+        src/nativestore/MetaPropertyLink.h
+        src/nativestore/MetaPropertyEdgeLink.h
+        src/query/processor/cypher/runtime/Helpers.h
 )
 
 set(SOURCES src/backend/JasmineGraphBackend.cpp
@@ -164,10 +166,13 @@ set(SOURCES src/backend/JasmineGraphBackend.cpp
         src/frontend/core/common/JasmineGraphFrontendCommon.h
         src/query/processor/cypher/queryplanner/Operators.cpp
         src/query/processor/cypher/queryplanner/QueryPlanner.cpp
-        src/query/processor/cypher/runtime/QueryPlanHandler.cpp
         src/query/processor/cypher/runtime/InstanceHandler.cpp
         src/query/processor/cypher/runtime/OperatorExecutor.cpp
         src/query/processor/cypher/util/SharedBuffer.cpp
+        src/nativestore/MetaPropertyLink.cpp
+        src/nativestore/MetaPropertyEdgeLink.cpp
+        src/query/processor/cypher/runtime/Helpers.cpp
+
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
