@@ -27,6 +27,7 @@ limitations under the License.
 #include "RelationBlock.h"
 #include "iostream"
 #include <sys/stat.h>
+#include <thread>
 
 Logger node_manager_logger;
 pthread_mutex_t lockEdgeAdd;
@@ -513,6 +514,7 @@ std::map<long, std::unordered_set<long>> NodeManager::getAdjacencyList(bool isLo
 
     RelationBlock* relationBlock;
 
+    node_manager_logger.info("Relation count : "+ to_string(newRelationCount));
     for (int i = 1; i <=  newRelationCount ; i++) {
         if (isLocal) {
             relationBlock = RelationBlock::getLocalRelation(i * relationBlockSize);

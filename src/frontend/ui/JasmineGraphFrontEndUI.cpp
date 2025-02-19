@@ -55,7 +55,6 @@ limitations under the License.
 #include "../../query/processor/cypher/queryplanner/QueryPlanner.h"
 #include "../../localstore/incremental/JasmineGraphIncrementalLocalStore.h"
 #include "../../server/JasmineGraphInstanceService.h"
-#include "../../query/processor/cypher/runtime/QueryPlanHandler.h"
 #include "../../query/processor/cypher/util/SharedBuffer.h"
 
 #define MAX_PENDING_CONNECTIONS 10
@@ -160,7 +159,7 @@ void *uifrontendservicesesion(void *dummyPt) {
             triangles_command(masterIP, connFd, sqlite, perfSqlite, jobScheduler, &loop_exit, line);
         } else if (token.compare(RMGR) == 0) {
             remove_graph_command(masterIP, connFd, sqlite, &loop_exit, line);
-        } else if (token.compare(CYPHER_AST) == 0){
+        } else if (token.compare(CYPHER) == 0){
             workerClients = getWorkerClients(sqlite);
             workerClientsInitialized = true;
             cypher_ast_command(connFd, workerClients, numberOfPartitions, &loop_exit, line);

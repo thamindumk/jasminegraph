@@ -133,6 +133,7 @@ void Partitioner::printStats() {
     }
 }
 
+
 void Partitioner::updateMetaDB() {
     double vertexCount = 0;
     double edgesCount = 0;

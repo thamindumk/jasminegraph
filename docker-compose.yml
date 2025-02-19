@@ -11,9 +11,9 @@ services:
       - './env/databases/performancedb:/home/ubuntu/software/jasminegraph/performancedb'
       - './env/data:/var/tmp/data'
       - '/tmp/jasminegraph:/tmp/jasminegraph'
-      - '/var/tmp/jasminegraph:/var/tmp/jasminegraph'
+      - '/var/tmp:/var/tmp'
     networks:
-      - jasminenet
+      - jasminegraph_net
     command: --MODE 1 --MASTERIP 172.28.5.1 --WORKERS 2 --WORKERIP 172.28.5.1 --ENABLE_NMON false
     depends_on:
       - prometheus
@@ -24,7 +24,7 @@ services:
     volumes:
       - './conf/prometheus.yaml:/etc/prometheus/prometheus.yml'
     networks:
-      jasminenet:
+      jasminegraph_net:
         ipv4_address: 172.28.5.2
     depends_on:
       - pushgateway
@@ -33,12 +33,12 @@ services:
     ports:
       - 9091:9091
     networks:
-      jasminenet:
-        ipv4_address: 172.28.5.3    
+      jasminegraph_net:
+        ipv4_address: 172.28.5.3
 networks:
-  jasminenet:
+  jasminegraph_net:
     external: false
-    name: jasminenet
+    name: jasminegraph_net
     driver: bridge
     ipam:
       config:
