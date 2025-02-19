@@ -1327,6 +1327,9 @@ map<long, long> calculateInDegreeDist(string graphID, string partitionID, int se
     instance_logger.info("In Degree Dist size: " + to_string(degreeDistribution.size()));
 
     string instanceDataFolderLocation = Utils::getJasmineGraphProperty("org.jasminegraph.server.instance.datafolder");
+
+    instance_logger.info("instance data folder location" + instanceDataFolderLocation);
+
     string attributeFilePart = instanceDataFolderLocation + "/" + graphID + "_idd_" + partitionID;
     ofstream partfile;
     partfile.open(attributeFilePart, std::fstream::trunc);
