@@ -11,77 +11,97 @@
 #include <queue>
 
 Logger execution_logger;
-std::unordered_map<std::string, std::function<void(OperatorExecutor&, SharedBuffer&, std::string, GraphConfig)>> OperatorExecutor::methodMap;
+std::unordered_map<std::string, std::function<void(OperatorExecutor&, SharedBuffer&, std::string,
+        GraphConfig, StatusBuffer&)>> OperatorExecutor::methodMap;
 OperatorExecutor::OperatorExecutor(GraphConfig gc, std::string queryPlan, std::string masterIP):
     queryPlan(queryPlan), gc(gc), masterIP(masterIP) {
     this->query = json::parse(queryPlan);
 };
 
 void OperatorExecutor::initializeMethodMap() {
-    methodMap["AllNodeScan"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
-        executor.AllNodeScan(buffer, jsonPlan, gc);
+    methodMap["AllNodeScan"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.AllNodeScan(buffer, jsonPlan, gc, statusBuffer);
     };
 
-    methodMap["ProduceResult"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
-        executor.ProduceResult(buffer, jsonPlan, gc); // Ignore the unused string parameter
+    methodMap["ProduceResult"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.ProduceResult(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
-    methodMap["Filter"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
-        executor.Filter(buffer, jsonPlan, gc); // Ignore the unused string parameter
+    methodMap["Filter"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.Filter(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
-    methodMap["ExpandAll"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
-        executor.ExpandAll(buffer, jsonPlan, gc); // Ignore the unused string parameter
+    methodMap["ExpandAll"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.ExpandAll(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
     methodMap["UndirectedRelationshipTypeScan"] = [](OperatorExecutor &executor, SharedBuffer &buffer,
-            std::string jsonPlan, GraphConfig gc) {
-        executor.UndirectedRelationshipTypeScan(buffer, jsonPlan, gc); // Ignore the unused string parameter
+            std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.UndirectedRelationshipTypeScan(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
     methodMap["UndirectedAllRelationshipScan"] = [](OperatorExecutor &executor, SharedBuffer &buffer,
-            std::string jsonPlan, GraphConfig gc) {
-        executor.UndirectedAllRelationshipScan(buffer, jsonPlan, gc); // Ignore the unused string parameter
+            std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.UndirectedAllRelationshipScan(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
     methodMap["NodeByIdSeek"] = [](OperatorExecutor &executor, SharedBuffer &buffer,
-                                                    std::string jsonPlan, GraphConfig gc) {
-        executor.NodeByIdSeek(buffer, jsonPlan, gc); // Ignore the unused string parameter
+                                                    std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.NodeByIdSeek(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
-    methodMap["Projection"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc){
-        executor.Projection(buffer, jsonPlan, gc);
+    methodMap["Projection"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.Projection(buffer, jsonPlan, gc, statusBuffer);
     };
 
     methodMap["EagerFunction"] = [](OperatorExecutor &executor, SharedBuffer &buffer,
-                                   std::string jsonPlan, GraphConfig gc) {
-        executor.EargarAggregation(buffer, jsonPlan, gc); // Ignore the unused string parameter
+                                   std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.EargarAggregation(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
     methodMap["Create"] = [](OperatorExecutor &executor, SharedBuffer &buffer,
-                                    std::string jsonPlan, GraphConfig gc) {
-        executor.Create(buffer, jsonPlan, gc); // Ignore the unused string parameter
+                                    std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.Create(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
     methodMap["CartesianProduct"] = [](OperatorExecutor &executor, SharedBuffer &buffer,
-                                     std::string jsonPlan, GraphConfig gc) {
-        executor.CartesianProduct(buffer, jsonPlan, gc); // Ignore the unused string parameter
+                                     std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.CartesianProduct(buffer, jsonPlan, gc, statusBuffer); // Ignore the unused string parameter
     };
 
-    methodMap["Distinct"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc){
-        executor.Distinct(buffer, jsonPlan, gc);
+    methodMap["Distinct"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.Distinct(buffer, jsonPlan, gc, statusBuffer);
     };
 
-    methodMap["OrderBy"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc){
-        executor.OrderBy(buffer, jsonPlan, gc);
+    methodMap["OrderBy"] = [](OperatorExecutor &executor, SharedBuffer &buffer, std::string jsonPlan,
+            GraphConfig gc, StatusBuffer &statusBuffer) {
+        executor.OrderBy(buffer, jsonPlan, gc, statusBuffer);
     };
 }
 
-void OperatorExecutor::AllNodeScan(SharedBuffer &buffer,std::string jsonPlan, GraphConfig gc) {
-    execution_logger.info(":::::::::ALl Node:::::::::::");
+void OperatorExecutor::AllNodeScan(SharedBuffer &buffer,std::string jsonPlan,
+                                   GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     NodeManager nodeManager(gc);
+    int size = nodeManager.nodeIndex.size();
+    int counter = 0;
+    StatusMessage status = {static_cast<int>(gc.partitionID), MessageType::PROGRESS,
+                            "Start scanning nodes..."};
+    statusBuffer.push(status);
+
     for (auto it : nodeManager.nodeIndex) {
+        counter++;
+        if (counter == size/4 || counter == size/2 || counter == 3*size/4) {
+            status = {static_cast<int>(gc.partitionID), MessageType::PROGRESS,
+                      "Scanned " + std::to_string(counter) + " nodes out of " + std::to_string(size)};
+            statusBuffer.push(status);
+        }
         json nodeData;
         auto nodeId = it.first;
         NodeBlock *node = nodeManager.get(nodeId);
@@ -106,19 +126,22 @@ void OperatorExecutor::AllNodeScan(SharedBuffer &buffer,std::string jsonPlan, Gr
     buffer.add("-1");
 }
 
-void OperatorExecutor::ProduceResult(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
-    execution_logger.info("::::::::Produce Result::::::::::::");
+void OperatorExecutor::ProduceResult(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
     std::string nextOpt = query["NextOperator"];
     json next = json::parse(nextOpt);
     auto method = OperatorExecutor::methodMap[next["Operator"]];
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
 
     while(true) {
         string raw = sharedBuffer.get();
         if(raw == "-1"){
+            StatusMessage status = {static_cast<int>(gc.partitionID), MessageType::SUCCESS,
+                                    "-1"};
+            statusBuffer.push(status);
             buffer.add(raw);
             result.join();
             break;
@@ -134,15 +157,15 @@ void OperatorExecutor::ProduceResult(SharedBuffer &buffer, std::string jsonPlan,
     }
 }
 
-void OperatorExecutor::Filter(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
-    execution_logger.info(":::::::::Filter:::::::::::");
+void OperatorExecutor::Filter(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
     std::string nextOpt = query["NextOperator"];
     json next = json::parse(nextOpt);
     auto method = OperatorExecutor::methodMap[next["Operator"]];
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
 
     auto condition = query["condition"];
     FilterHelper FilterHelper(condition.dump());
@@ -159,7 +182,7 @@ void OperatorExecutor::Filter(SharedBuffer &buffer, std::string jsonPlan, GraphC
     }
 }
 
-void OperatorExecutor::UndirectedRelationshipTypeScan(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::UndirectedRelationshipTypeScan(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
 
     json query = json::parse(jsonPlan);
     NodeManager nodeManager(gc);
@@ -182,7 +205,7 @@ void OperatorExecutor::UndirectedRelationshipTypeScan(SharedBuffer &buffer, std:
     buffer.add("-1");
 }
 
-void OperatorExecutor::UndirectedAllRelationshipScan(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::UndirectedAllRelationshipScan(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     NodeManager nodeManager(gc);
 
@@ -316,7 +339,7 @@ void OperatorExecutor::UndirectedAllRelationshipScan(SharedBuffer &buffer, std::
     buffer.add("-1");
 }
 
-void OperatorExecutor::NodeByIdSeek(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::NodeByIdSeek(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     NodeManager nodeManager(gc);
     NodeBlock* node = nodeManager.get(query["id"]);
@@ -338,14 +361,15 @@ void OperatorExecutor::NodeByIdSeek(SharedBuffer &buffer, std::string jsonPlan, 
     buffer.add("-1");
 }
 
-void OperatorExecutor::ExpandAll(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::ExpandAll(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
     std::string nextOpt = query["NextOperator"];
     json next = json::parse(nextOpt);
     auto method = OperatorExecutor::methodMap[next["Operator"]];
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
 
     string sourceVariable = query["sourceVariable"];
     string destVariable = query["destVariable"];
@@ -656,14 +680,15 @@ void OperatorExecutor::ExpandAll(SharedBuffer &buffer, std::string jsonPlan, Gra
     }
 }
 
-void OperatorExecutor::EargarAggregation(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::EargarAggregation(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
     std::string nextOpt = query["NextOperator"];
     json next = json::parse(nextOpt);
     auto method = OperatorExecutor::methodMap[next["Operator"]];
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
     AverageAggregationHelper* averageAggregationHelper =
             new AverageAggregationHelper(query["variable"], query["property"]);
     while(true) {
@@ -678,7 +703,7 @@ void OperatorExecutor::EargarAggregation(SharedBuffer &buffer, std::string jsonP
     }
 }
 
-void OperatorExecutor::Projection(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc){
+void OperatorExecutor::Projection(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer){
     execution_logger.info("::::::::::Project::::::::::");
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
@@ -687,7 +712,8 @@ void OperatorExecutor::Projection(SharedBuffer &buffer, std::string jsonPlan, Gr
     auto method = OperatorExecutor::methodMap[next["Operator"]];
 
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
     if (!query.contains("project") || !query["project"].is_array()) {
         while(true) {
             string raw = sharedBuffer.get();
@@ -724,7 +750,7 @@ void OperatorExecutor::Projection(SharedBuffer &buffer, std::string jsonPlan, Gr
     }
 }
 
-void OperatorExecutor::Create(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::Create(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
     string partitionAlgo = Utils::getPartitionAlgorithm(to_string(gc.graphID), masterIP);
@@ -734,7 +760,8 @@ void OperatorExecutor::Create(SharedBuffer &buffer, std::string jsonPlan, GraphC
         json next = json::parse(nextOpt);
         auto method = OperatorExecutor::methodMap[next["Operator"]];
         // Launch the method in a new thread
-        std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+        std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                           gc, std::ref(statusBuffer));
         while(true) {
             string raw = sharedBuffer.get();
             if(raw == "-1"){
@@ -750,7 +777,7 @@ void OperatorExecutor::Create(SharedBuffer &buffer, std::string jsonPlan, GraphC
     }
 }
 
-void OperatorExecutor::CartesianProduct(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc) {
+void OperatorExecutor::CartesianProduct(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer left(5);
     SharedBuffer right(5);
@@ -761,7 +788,8 @@ void OperatorExecutor::CartesianProduct(SharedBuffer &buffer, std::string jsonPl
     auto leftMethod = OperatorExecutor::methodMap[leftJson["Operator"]];
     auto rightMethod = OperatorExecutor::methodMap[rightJson["Operator"]];
     // Launch the method in a new thread
-    std::thread leftThread(leftMethod, std::ref(*this), std::ref(left), query["left"], gc);
+    std::thread leftThread(leftMethod, std::ref(*this), std::ref(left), query["left"],
+                           gc, std::ref(statusBuffer));
     while(true) {
         string leftRaw = left.get();
         if(leftRaw == "-1"){
@@ -788,7 +816,8 @@ void OperatorExecutor::CartesianProduct(SharedBuffer &buffer, std::string jsonPl
             );
         }
 
-        std::thread rightThread(rightMethod, std::ref(*this), std::ref(right), query["right"], gc);
+        std::thread rightThread(rightMethod, std::ref(*this), std::ref(right), query["right"],
+                                gc, std::ref(statusBuffer));
         int count = 0;
         while(true) {
             string rightRaw = right.get();
@@ -819,7 +848,7 @@ void OperatorExecutor::CartesianProduct(SharedBuffer &buffer, std::string jsonPl
     }
 }
 
-void OperatorExecutor::Distinct(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc){
+void OperatorExecutor::Distinct(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer) {
     json query = json::parse(jsonPlan);
     SharedBuffer sharedBuffer(5);
     std::string nextOpt = query["NextOperator"];
@@ -827,7 +856,8 @@ void OperatorExecutor::Distinct(SharedBuffer &buffer, std::string jsonPlan, Grap
     auto method = OperatorExecutor::methodMap[next["Operator"]];
 
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
     if (!query.contains("project") || !query["project"].is_array()) {
         while(true) {
             string raw = sharedBuffer.get();
@@ -891,7 +921,7 @@ struct Row {
     }
 };
 
-void OperatorExecutor::OrderBy(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc){
+void OperatorExecutor::OrderBy(SharedBuffer &buffer, std::string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer){
     execution_logger.info("::::::::::::Order By::::::::");
 
     json query = json::parse(jsonPlan);
@@ -901,7 +931,8 @@ void OperatorExecutor::OrderBy(SharedBuffer &buffer, std::string jsonPlan, Graph
     auto method = OperatorExecutor::methodMap[next["Operator"]];
 
     // Launch the method in a new thread
-    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"], gc);
+    std::thread result(method, std::ref(*this), std::ref(sharedBuffer), query["NextOperator"],
+                       gc, std::ref(statusBuffer));
 
     std::string sortKey = query["variable"];
     std::string order = query["order"];

@@ -60,6 +60,8 @@ limitations under the License.
 #include "../query/processor/cypher/runtime/AggregationFactory.h"
 #include "../query/processor/cypher/runtime/Aggregation.h"
 #include "../partitioner/stream/Partitioner.h"
+#include "../query/processor/cypher/statusNotification/StatusBuffer.h"
+#include "../query/processor/cypher/statusNotification/StatusMessage.h"
 
 
 #define MAX_PENDING_CONNECTIONS 10
@@ -492,6 +494,9 @@ static void cypher_ast_command(int connFd, vector<DataPublisher *> &workerClient
     // print query plan
     frontend_logger.info((obj.c_str()));
 
+    // notifiction buffer
+    StatusBuffer statusBuffer;
+    std::thread statusThread(&StatusBuffer::listenStatusNotification, &statusBuffer, connFd);
     // Create buffer pool
     std::vector<std::unique_ptr<SharedBuffer>> bufferPool;
     bufferPool.reserve(numberOfPartitions); // Pre-allocate space for pointers
@@ -501,7 +506,8 @@ static void cypher_ast_command(int connFd, vector<DataPublisher *> &workerClient
 
     // send query plan
     JasmineGraphServer *server = JasmineGraphServer::getInstance();
-    server->sendQueryPlan(stoi(user_res_1), workerClients.size(), obj, std::ref(bufferPool));
+    server->sendQueryPlan(stoi(user_res_1), workerClients.size(), obj, std::ref(bufferPool),
+                          std::ref(statusBuffer));
 
     int closeFlag = 0;
     if (Operator::isAggregate) {
@@ -509,6 +515,7 @@ static void cypher_ast_command(int connFd, vector<DataPublisher *> &workerClient
             Aggregation* aggregation = AggregationFactory::getAggregationMethod(AggregationFactory::AVERAGE);
             while (true) {
                 if (closeFlag == numberOfPartitions) {
+                    statusThread.join();
                     break;
                 }
                 for (size_t i = 0; i < bufferPool.size(); ++i) {
@@ -639,6 +646,7 @@ static void cypher_ast_command(int connFd, vector<DataPublisher *> &workerClient
             }
         }
     }
+    statusThread.join();
 }
 
 static void add_rdf_command(std::string masterIP, int connFd, SQLiteDBInterface *sqlite, bool *loop_exit_p) {

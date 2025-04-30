@@ -20,7 +20,6 @@
 class InstanceHandler
 {
 public:
-    Logger instance_logger;
     InstanceHandler(std::map<std::string, JasmineGraphIncrementalLocalStore *> &incrementalLocalStoreMap);
     void handleRequest(int connFd, bool *loop_exit_p, GraphConfig gc, string masterIP,
                        std::string queryJson);
@@ -28,6 +27,8 @@ public:
 
 
 private:
+    static std::unordered_map<int, std::mutex> connectionLocks;
+    static std::mutex mapMutex;
     std::map<std::string,
              JasmineGraphIncrementalLocalStore *> &incrementalLocalStoreMap;
 };

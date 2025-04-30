@@ -119,7 +119,6 @@ void *uifrontendservicesesion(void *dummyPt) {
     std::string kafka_server_IP;
     cppkafka::Configuration configs;
     KafkaConnector *kstream;
-    Partitioner graphPartitioner(numberOfPartitions, 1, spt::Algorithms::HASH, sqlite);
 
     vector<DataPublisher *> workerClients;
     bool workerClientsInitialized = false;
@@ -823,7 +822,8 @@ static void cypher_ast_command(int connFd, vector<DataPublisher *> &workerClient
 
     // print query plan
     ui_frontend_logger.info((obj.c_str()));
-
+    StatusBuffer statusBuffer;
+    std::thread statusThread(&StatusBuffer::listenStatusNotification, &statusBuffer, connFd);
     // Create buffer pool
     std::vector<std::unique_ptr<SharedBuffer>> bufferPool;
     bufferPool.reserve(numberOfPartitions); // Pre-allocate space for pointers
@@ -833,8 +833,8 @@ static void cypher_ast_command(int connFd, vector<DataPublisher *> &workerClient
 
     // send query plan
     JasmineGraphServer *server = JasmineGraphServer::getInstance();
-    server->sendQueryPlan(stoi(user_res_1), workerClients.size(), obj, std::ref(bufferPool));
-
+    server->sendQueryPlan(stoi(user_res_1), workerClients.size(), obj, std::ref(bufferPool),
+                          std::ref(statusBuffer));
     int closeFlag = 0;
     if (Operator::isAggregate) {
         if (Operator::aggregateType == AggregationFactory::AVERAGE){

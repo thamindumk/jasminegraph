@@ -32,6 +32,8 @@ limitations under the License.
 #include "../util/Conts.h"
 #include "../util/Utils.h"
 #include "../query/processor/cypher/util/SharedBuffer.h"
+#include "../query/processor/cypher/statusNotification/StatusBuffer.h"
+
 
 class K8sWorkerController;
 
@@ -89,9 +91,11 @@ class JasmineGraphServer {
 
     void uploadGraphLocally(int graphID, const std::string graphType,
                             std::vector<std::map<int, std::string>> fullFileList, std::string masterIP);
-    void sendQueryPlan(int graphID, int numberOfPartitions, string queryPlan, std::vector<std::unique_ptr<SharedBuffer>>& bufferPool);
+    void sendQueryPlan(int graphID, int numberOfPartitions, string queryPlan,
+                       std::vector<std::unique_ptr<SharedBuffer>>& bufferPool, StatusBuffer &statusBuffer);
     static bool queryDataCommunicator(std::string host, int port, std::string masterIP,
-                                      int graphID, int PartitionId, std::string message, SharedBuffer &sharedBuffer);
+                                      int graphID, int PartitionId, std::string message, SharedBuffer &sharedBuffer,
+                                      StatusBuffer &statusBuffer);
 
 
     static void removeGraph(std::vector<std::pair<std::string, std::string>> hostHasPartition, std::string graphID,

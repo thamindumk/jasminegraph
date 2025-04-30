@@ -9,30 +9,31 @@
 #include "../util/SharedBuffer.h"
 #include <string>
 #include <vector>
-
+class StatusBuffer;
 using namespace  std;
 
 class OperatorExecutor {
  public:
     OperatorExecutor(GraphConfig gc, string queryPlan, string masterIP);
-    void AllNodeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void ProduceResult(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void Filter(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void ExpandAll(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void UndirectedRelationshipTypeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void UndirectedAllRelationshipScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void NodeByIdSeek(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void EargarAggregation(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void Create(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void CartesianProduct(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void Projection(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void Distinct(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
-    void OrderBy(SharedBuffer &buffer, string jsonPlan, GraphConfig gc);
+    void AllNodeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void ProduceResult(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void Filter(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void ExpandAll(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void UndirectedRelationshipTypeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void UndirectedAllRelationshipScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void NodeByIdSeek(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void EargarAggregation(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void Create(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void CartesianProduct(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void Projection(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void Distinct(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void OrderBy(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     string masterIP;
     string  queryPlan;
     GraphConfig gc;
     json query;
-    static std::unordered_map<std::string, std::function<void(OperatorExecutor &, SharedBuffer &, std::string, GraphConfig)>> methodMap;
+    static std::unordered_map<std::string, std::function<void(OperatorExecutor &, SharedBuffer &, std::string,
+            GraphConfig, StatusBuffer&)>> methodMap;
     static void initializeMethodMap();
 };
 
