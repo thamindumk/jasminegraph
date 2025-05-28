@@ -25,13 +25,16 @@ class OperatorExecutor {
  public:
     OperatorExecutor(GraphConfig gc, string queryPlan, string masterIP);
     void AllNodeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void NodeScanByLabel(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void ProduceResult(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void Filter(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void ExpandAll(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void UndirectedRelationshipTypeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void UndirectedAllRelationshipScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void DirectedRelationshipTypeScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void DirectedAllRelationshipScan(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void NodeByIdSeek(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
-    void EargarAggregation(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
+    void AggregationFunction(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void Create(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void CartesianProduct(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);
     void Projection(SharedBuffer &buffer, string jsonPlan, GraphConfig gc, StatusBuffer &statusBuffer);

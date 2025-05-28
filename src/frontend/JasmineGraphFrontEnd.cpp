@@ -522,6 +522,7 @@ static void cypherCommand(int connFd, vector<DataPublisher *> &workerClients,
 
     int closeFlag = 0;
     if (Operator::isAggregate) {
+        auto startTime = std::chrono::high_resolution_clock::now();
         if (Operator::aggregateType == AggregationFactory::AVERAGE) {
             Aggregation* aggregation = AggregationFactory::getAggregationMethod(AggregationFactory::AVERAGE);
             while (true) {
@@ -593,13 +594,11 @@ static void cypherCommand(int connFd, vector<DataPublisher *> &workerClients,
 
             // Merge loop
             while (!mergeQueue.empty()) {
-                frontend_logger.info(":::::::FRONTEND:::::::");
-
                 // Pick smallest value
                 BufferEntry smallest = mergeQueue.top();
                 frontend_logger.info(smallest.value);
                 size_t queueSize = mergeQueue.size();
-                frontend_logger.info(std::to_string(queueSize));
+                frontend_logger.debug(std::to_string(queueSize));
                 mergeQueue.pop();
                 result_wr = write(connFd, smallest.value.c_str(), smallest.value.length());
                 if (result_wr < 0) {
@@ -647,18 +646,26 @@ static void cypherCommand(int connFd, vector<DataPublisher *> &workerClients,
                 return;
             }
         }
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        int totalTime = duration.count();
+        string finalMessage = "Time taken to process aggregate query: " +
+                std::to_string(totalTime) + " ms";
+        result_wr = write(connFd, finalMessage.c_str(), finalMessage.length());
+        Operator::isAggregate = false;
     } else {
+        int count = 0;
         while (true) {
             if (closeFlag == numberOfPartitions) {
                 break;
             }
-
             for (size_t i = 0; i < bufferPool.size(); ++i) {
                 std::string data;
                 if (bufferPool[i]->tryGet(data)) {
                     if (data == "-1") {
                         closeFlag++;
                     } else {
+                        count++;
                         result_wr = write(connFd, data.c_str(), data.length());
                         result_wr = write(connFd, Conts::CARRIAGE_RETURN_NEW_LINE.c_str(),
                                           Conts::CARRIAGE_RETURN_NEW_LINE.size());
@@ -670,6 +677,14 @@ static void cypherCommand(int connFd, vector<DataPublisher *> &workerClients,
                     }
                 }
             }
+        }
+        result_wr = write(connFd, to_string(count).c_str(), to_string(count).length());
+        result_wr = write(connFd, Conts::CARRIAGE_RETURN_NEW_LINE.c_str(),
+                          Conts::CARRIAGE_RETURN_NEW_LINE.size());
+        if (result_wr < 0) {
+            frontend_logger.error("Error writing to socket");
+            *loop_exit = true;
+            return;
         }
     }
     statusThread.join();

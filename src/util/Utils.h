@@ -212,6 +212,8 @@ class Utils {
     static string getPartitionAlgorithm(string graphID, std::string host);
     static bool isStatusMessage(const std::string& str);
 
+    static string getGraphDirection(string graphID, std::string host);
+
 };
 
 #endif  // JASMINEGRAPH_UTILS_H
