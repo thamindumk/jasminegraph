@@ -36,6 +36,8 @@ class InstanceHandler {
 
 
  private:
+    static std::unordered_map<int, std::mutex> connectionLocks;
+    static std::mutex mapMutex;
     std::map<std::string,
              JasmineGraphIncrementalLocalStore *> &incrementalLocalStoreMap;
 };

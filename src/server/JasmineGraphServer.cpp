@@ -964,19 +964,24 @@ void JasmineGraphServer::uploadGraphLocally(int graphID, const string graphType,
 }
 
 void JasmineGraphServer::sendQueryPlan(int graphID, int numberOfPartitions, string queryPlan,
-                                       std::vector<std::unique_ptr<SharedBuffer>>& bufferPool) {
+                                       std::vector<std::unique_ptr<SharedBuffer>>& bufferPool,
+                                       StatusBuffer &statusBuffer) {
     const auto &workerList = getWorkers(numberOfPartitions);
     std::thread *workerThreads = new std::thread[numberOfPartitions];
     int count = 0;
     for (auto worker : workerList) {
         workerThreads[count++] = std::thread(queryDataCommunicator, worker.hostname, worker.port,
-                                             masterHost, graphID, count, queryPlan, std::ref(*bufferPool[count]));
+                                             masterHost, graphID, count, queryPlan, std::ref(*bufferPool[count]),
+                                             std::ref(statusBuffer));
     }
 }
 
 bool JasmineGraphServer::queryDataCommunicator(std::string host, int port, std::string masterIP, int graphID,
-                                               int PartitionId, std::string message, SharedBuffer &sharedBuffer) {
-    return Utils::sendQueryPlanToWorker(host, port, masterIP, graphID, PartitionId, message, sharedBuffer);
+                                               int PartitionId, std::string message, SharedBuffer &sharedBuffer,
+                                               StatusBuffer &statusBuffer) {
+
+    return Utils::sendQueryPlanToWorker(host, port, masterIP, graphID, PartitionId, message,
+                                        sharedBuffer, statusBuffer);
 }
 
 static void assignPartitionToWorker(std::string fileName, int graphId, std::string workerHost, int workerPort) {

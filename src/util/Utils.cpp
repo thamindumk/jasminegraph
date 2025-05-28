@@ -1392,8 +1392,8 @@ void Utils::assignPartitionToWorker(int graphId, int partitionIndex, string  hos
     delete sqlite;
 }
 
-bool Utils::sendQueryPlanToWorker(std::string host, int port, std::string masterIP,
-                                  int graphID, int partitionId, std::string message, SharedBuffer &sharedBuffer) {
+bool Utils::sendQueryPlanToWorker(std::string host, int port, std::string masterIP, int graphID, int partitionId,
+                                  std::string message, SharedBuffer &sharedBuffer, StatusBuffer &statusBuffer) {
     util_logger.info("Host:" + host + " Port:" + to_string(port));
     bool result = true;
     int sockfd;
@@ -1529,6 +1529,11 @@ bool Utils::sendQueryPlanToWorker(std::string host, int port, std::string master
             util_logger.info("Error while reading graph data");
             return false;
         }
+        if (isStatusMessage(data)) {
+            StatusMessage statusMessage = StatusMessage::fromString(data);
+            statusBuffer.push(statusMessage);
+        }
+
         if (data == "-1") {
             sharedBuffer.add(data);
             break;
@@ -1881,4 +1886,15 @@ bool Utils::sendDataFromWorkerToWorker(string masterIP, int graphID, string part
     auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - startTime);
     util_logger.info(" Time Taken: " + std::to_string(elapsed.count()) + " seconds");
     return true;
+}
+
+bool Utils::isStatusMessage(const std::string &str) {
+    if (str.empty()) return false;
+    if (str.front() == '{') return false;
+
+    int pipeCount = 0;
+    for (char c : str) {
+        if (c == '|') pipeCount++;
+    }
+    return pipeCount == 2;
 }
