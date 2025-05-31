@@ -88,31 +88,32 @@ void InstanceHandler::dataPublishToMaster(int connFd, bool *loop_exit_p, std::st
             *loop_exit_p = true;
             return;
         }
+    }
 
-        std::string length_ack(JasmineGraphInstanceProtocol::GRAPH_STREAM_C_length_ACK.length(), 0);
-        return_status = recv(connFd, &length_ack[0],
-                             JasmineGraphInstanceProtocol::GRAPH_STREAM_C_length_ACK.length(), 0);
-        if (return_status > 0) {
-            instanceHandlerLogger.debug("Received content length ack: " + length_ack);
-        } else {
-            instanceHandlerLogger.debug("Error while reading content length ack");
-            *loop_exit_p = true;
-            return;
-        }
+    std::string length_ack(JasmineGraphInstanceProtocol::GRAPH_STREAM_C_length_ACK.length(), 0);
+    return_status = recv(connFd, &length_ack[0],
+                         JasmineGraphInstanceProtocol::GRAPH_STREAM_C_length_ACK.length(), 0);
+    if (return_status > 0) {
+        instanceHandlerLogger.debug("Received content length ack: " + length_ack);
+    } else {
+        instanceHandlerLogger.debug("Error while reading content length ack");
+        *loop_exit_p = true;
+        return;
+    }
 
-        if (!Utils::send_str_wrapper(connFd, message)) {
-            *loop_exit_p = true;
-            return;
-        }
+    cout<<message<<endl;
+    if (!Utils::send_str_wrapper(connFd, message)) {
+        *loop_exit_p = true;
+        return;
+    }
 
-        std::string success_ack(JasmineGraphInstanceProtocol::GRAPH_DATA_SUCCESS.length(), 0);
-        return_status = recv(connFd, &success_ack[0], JasmineGraphInstanceProtocol::GRAPH_DATA_SUCCESS.length(), 0);
-        if (return_status > 0) {
-            instanceHandlerLogger.debug("Received success ack: " + success_ack);
-        } else {
-            instanceHandlerLogger.debug("Error while reading content length ack");
-            *loop_exit_p = true;
-            return;
-        }
+    std::string success_ack(JasmineGraphInstanceProtocol::GRAPH_DATA_SUCCESS.length(), 0);
+    return_status = recv(connFd, &success_ack[0], JasmineGraphInstanceProtocol::GRAPH_DATA_SUCCESS.length(), 0);
+    if (return_status > 0) {
+        instanceHandlerLogger.debug("Received success ack: " + success_ack);
+    } else {
+        instanceHandlerLogger.debug("Error while reading content length ack");
+        *loop_exit_p = true;
+        return;
     }
 }

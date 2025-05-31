@@ -302,7 +302,7 @@ static void list_command(int connFd, SQLiteDBInterface *sqlite, bool *loop_exit_
                 } else if (col_name == "central_edgecount") {
                     partition_entry["central_edgecount"] = std::stoi(col_value);
                 } else if (col_name == "central_edgecount_with_dups") {
-                    partition_entry["central_edgecount_with_dups"] = std::stoi(col_value);
+                    partition_entry["central_edgecount_with_dups"] = col_value;
                 }
             } catch (const std::exception& e) {
                 // Log error and skip this partition
