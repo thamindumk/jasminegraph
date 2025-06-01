@@ -33,19 +33,21 @@ void StatusBuffer::listenStatusNotification(int connFd){
             StatusMessage msg = this->pop();
             data = msg.toString();
             if (msg.message == "-1") {
-                notificationLogger.info("Done");
                 break;
             }
             notificationLogger.info("Received status message: " + data);
         }
     }
+    return;
 }
 
 void StatusBuffer::sendStatusNotification(int connFd, bool *loop_exit_p, InstanceHandler *instanceHandler) {
     while (true) {
         StatusMessage notification = this->pop();
         std::string raw = notification.toString();
-        if(raw == "-1"){
+        std::string message = notification.message;
+        notificationLogger.info("Sending status message: " + message);
+        if(message == "-1"){
             instanceHandler->dataPublishToMaster(connFd, loop_exit_p, raw);
             break;
         }

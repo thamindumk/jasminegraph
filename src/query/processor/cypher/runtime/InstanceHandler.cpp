@@ -44,7 +44,6 @@ void InstanceHandler::handleRequest(int connFd, bool *loop_exit_p,
             this->dataPublishToMaster(connFd, loop_exit_p, raw);
             instance_logger.info("Total time taken for query execution: " + std::to_string(time) + " ms");
             result.join();
-            notification.join();
             break;
         }
         auto endTime = std::chrono::high_resolution_clock::now();
@@ -53,6 +52,7 @@ void InstanceHandler::handleRequest(int connFd, bool *loop_exit_p,
         this->dataPublishToMaster(connFd, loop_exit_p, raw);
         startTime = std::chrono::high_resolution_clock::now();
     }
+    notification.join();
 }
 
 void InstanceHandler::dataPublishToMaster(int connFd, bool *loop_exit_p, std::string message) {
@@ -61,7 +61,6 @@ void InstanceHandler::dataPublishToMaster(int connFd, bool *loop_exit_p, std::st
         std::lock_guard<std::mutex> lock(mapMutex);
         connMutex = &connectionLocks[connFd]; // creates mutex if not exist
     }
-
     std::lock_guard<std::mutex> connLock(*connMutex);
 
     if (!Utils::send_str_wrapper(connFd, JasmineGraphInstanceProtocol::QUERY_DATA_START)) {
