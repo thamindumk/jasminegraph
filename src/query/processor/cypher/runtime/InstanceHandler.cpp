@@ -101,7 +101,6 @@ void InstanceHandler::dataPublishToMaster(int connFd, bool *loop_exit_p, std::st
         return;
     }
 
-    cout<<message<<endl;
     if (!Utils::send_str_wrapper(connFd, message)) {
         *loop_exit_p = true;
         return;

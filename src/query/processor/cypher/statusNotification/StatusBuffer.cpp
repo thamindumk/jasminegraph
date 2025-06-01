@@ -33,20 +33,10 @@ void StatusBuffer::listenStatusNotification(int connFd){
             StatusMessage msg = this->pop();
             data = msg.toString();
             if (msg.message == "-1") {
-                notificationLogger.error("Done");
+                notificationLogger.info("Done");
                 break;
             }
-            int result_wr = write(connFd, data.c_str(), data.length());
-            if (result_wr < 0) {
-                notificationLogger.error("Error writing to socket ");
-                break;
-            }
-
-            result_wr = write(connFd, "\r\n", 2);
-            if (result_wr < 0) {
-                notificationLogger.error("Error writing to socket ");
-                break;
-            }
+            notificationLogger.info("Received status message: " + data);
         }
     }
 }

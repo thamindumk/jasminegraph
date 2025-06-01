@@ -678,14 +678,7 @@ static void cypherCommand(int connFd, vector<DataPublisher *> &workerClients,
                 }
             }
         }
-        result_wr = write(connFd, to_string(count).c_str(), to_string(count).length());
-        result_wr = write(connFd, Conts::CARRIAGE_RETURN_NEW_LINE.c_str(),
-                          Conts::CARRIAGE_RETURN_NEW_LINE.size());
-        if (result_wr < 0) {
-            frontend_logger.error("Error writing to socket");
-            *loop_exit = true;
-            return;
-        }
+        frontend_logger.info("Total records returned: " + std::to_string(count));
     }
     statusThread.join();
 }
